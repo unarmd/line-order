@@ -1,0 +1,212 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Order</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 16px; }
+    .row { display:flex; gap:12px; align-items:center; margin: 10px 0; }
+    .name { flex: 1; }
+    button { padding: 6px 10px; }
+    input { padding: 8px; width: 100%; }
+    .card { border: 1px solid #ddd; padding: 12px; border-radius: 10px; margin: 10px 0; }
+    .totals { font-size: 18px; font-weight: 600; }
+    .muted { color: #666; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h2>Order</h2>
+
+  <div class="card">
+    <div class="muted">Products</div>
+    <div id="products"></div>
+  </div>
+
+  <div class="card">
+    <div class="muted">Customer</div>
+    <div class="row"><div class="name">Name</div><input id="customer_name" placeholder="Your name"></div>
+    <div class="row"><div class="name">Phone</div><input id="phone" placeholder="090..."></div>
+    <div class="row">
+      <div class="name">Delivery</div>
+      <select id="delivery_method">
+        <option value="pickup">Pickup</option>
+        <option value="delivery">Delivery</option>
+      </select>
+    </div>
+    <div class="row"><div class="name">Address</div><input id="address" placeholder="If delivery"></div>
+  </div>
+
+  <div class="card">
+    <div class="muted">Price preview (server-calculated)</div>
+    <div id="preview" class="totals">—</div>
+    <div id="breakdown" class="muted"></div>
+  </div>
+
+  <button id="submitBtn">Place order</button>
+  <div id="msg" class="muted" style="margin-top:10px;"></div>
+
+<script>
+  /************* CONFIG *************/
+  const API_BASE = "https://script.google.com/macros/s/AKfycbxtN9QA3lWK0eK86aEt2Es0zTTa0Wd_AL4G9no7O4j7CmJlr0smpGnWubF6X5ngj0k/exec"; // .../exec
+  const APP_KEY  = "unseatedcap070911311234";        // must match Code.gs
+
+  // If you add LIFF later, set this from liff.getProfile().userId
+  let line_user_id = "";
+
+  let products = [];
+  let cart = {}; // { product_id: qty }
+  let previewTimer = null;
+
+  function yen(n){ return "¥" + Number(n || 0).toLocaleString("ja-JP"); }
+
+  async function apiGetProducts() {
+    const url = `${API_BASE}?action=products&key=${encodeURIComponent(APP_KEY)}`;
+    const res = await fetch(url);
+    return await res.json();
+  }
+
+  async function apiPreview(cartArr) {
+    const res = await fetch(API_BASE, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key: APP_KEY, action: "preview", cart: cartArr })
+    });
+    return await res.json();
+  }
+
+  async function apiSubmit(cartArr, customer) {
+    const res = await fetch(API_BASE, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        key: APP_KEY,
+        action: "submit",
+        cart: cartArr,
+        customer,
+        line_user_id
+      })
+    });
+    return await res.json();
+  }
+
+  function cartAsArray() {
+    const arr = [];
+    for (const pid of Object.keys(cart)) {
+      const qty = cart[pid];
+      if (qty > 0) arr.push({ product_id: pid, qty });
+    }
+    return arr;
+  }
+
+  function renderProducts() {
+    const el = document.getElementById("products");
+    el.innerHTML = "";
+
+    products.forEach(p => {
+      const row = document.createElement("div");
+      row.className = "row";
+
+      const name = document.createElement("div");
+      name.className = "name";
+      name.textContent = `${p.name} (${yen(p.base_price)})`;
+
+      const minus = document.createElement("button");
+      minus.textContent = "−";
+      minus.onclick = () => {
+        cart[p.product_id] = Math.max(0, (cart[p.product_id] || 0) - 1);
+        qty.textContent = cart[p.product_id] || 0;
+        schedulePreview();
+      };
+
+      const qty = document.createElement("div");
+      qty.style.width = "24px";
+      qty.style.textAlign = "center";
+      qty.textContent = cart[p.product_id] || 0;
+
+      const plus = document.createElement("button");
+      plus.textContent = "+";
+      plus.onclick = () => {
+        cart[p.product_id] = (cart[p.product_id] || 0) + 1;
+        qty.textContent = cart[p.product_id];
+        schedulePreview();
+      };
+
+      row.appendChild(name);
+      row.appendChild(minus);
+      row.appendChild(qty);
+      row.appendChild(plus);
+      el.appendChild(row);
+    });
+  }
+
+  function setPreview(totals) {
+    const p = document.getElementById("preview");
+    const b = document.getElementById("breakdown");
+    if (!totals) {
+      p.textContent = "—";
+      b.textContent = "";
+      return;
+    }
+    p.textContent = `Total: ${yen(totals.total)}`;
+    b.textContent = `Subtotal ${yen(totals.subtotal)} · Shipping ${yen(totals.shipping)} · Discount ${yen(totals.discount)} · Tax ${yen(totals.tax)}`;
+  }
+
+  function schedulePreview() {
+    if (previewTimer) clearTimeout(previewTimer);
+    previewTimer = setTimeout(runPreview, 250);
+  }
+
+  async function runPreview() {
+    const cartArr = cartAsArray();
+    if (cartArr.length === 0) { setPreview(null); return; }
+
+    const res = await apiPreview(cartArr);
+    if (!res.ok) {
+      document.getElementById("msg").textContent = "Preview error: " + res.error;
+      setPreview(null);
+      return;
+    }
+    setPreview(res.totals);
+    document.getElementById("msg").textContent = "";
+  }
+
+  async function init() {
+    // Load products
+    const res = await apiGetProducts();
+    if (!res.ok) {
+      document.getElementById("msg").textContent = "Products error: " + res.error;
+      return;
+    }
+    products = res.products;
+    renderProducts();
+  }
+
+  document.getElementById("submitBtn").onclick = async () => {
+    const cartArr = cartAsArray();
+    if (cartArr.length === 0) { alert("Cart is empty"); return; }
+
+    const customer = {
+      customer_name: document.getElementById("customer_name").value.trim(),
+      phone: document.getElementById("phone").value.trim(),
+      delivery_method: document.getElementById("delivery_method").value,
+      address: document.getElementById("address").value.trim()
+    };
+
+    const res = await apiSubmit(cartArr, customer);
+    if (!res.ok) {
+      alert("Submit error: " + res.error);
+      return;
+    }
+    alert(`Order placed!\nOrder ID: ${res.order_id}\nTotal: ${yen(res.totals.total)}`);
+
+    // reset
+    cart = {};
+    renderProducts();
+    setPreview(null);
+  };
+
+  init();
+</script>
+</body>
+</html>
