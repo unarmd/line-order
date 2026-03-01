@@ -25,20 +25,20 @@
 
   <div class="card">
     <div class="muted">Customer</div>
-    <div class="row"><div class="name">Name</div><input id="customer_name" placeholder="Your name"></div>
-    <div class="row"><div class="name">Phone</div><input id="phone" placeholder="090..."></div>
+    <div class="row"><div class="name">姓名</div><input id="customer_name" placeholder="山本 太郎"></div>
+    <div class="row"><div class="name">電話番号</div><input id="phone" placeholder="090..."></div>
     <div class="row">
-      <div class="name">Delivery</div>
+      <div class="name">配送方法</div>
       <select id="delivery_method">
-        <option value="pickup">Pickup</option>
-        <option value="delivery">Delivery</option>
+        <!-- <option value="pickup">Pickup</option> -->
+        <option value="delivery">郵送</option>
       </select>
     </div>
-    <div class="row"><div class="name">Address</div><input id="address" placeholder="If delivery"></div>
+    <div class="row"><div class="name">郵送先</div><input id="address" placeholder="東京都…"></div>
   </div>
 
   <div class="card">
-    <div class="muted">Price preview (server-calculated)</div>
+    <div class="muted">合計；</div>
     <div id="preview" class="totals">—</div>
     <div id="breakdown" class="muted"></div>
   </div>
