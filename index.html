@@ -69,16 +69,16 @@
   async function apiPreview(cartArr) {
     const res = await fetch(API_BASE, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({ key: APP_KEY, action: "preview", cart: cartArr })
     });
     return await res.json();
   }
-
+  
   async function apiSubmit(cartArr, customer) {
     const res = await fetch(API_BASE, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({
         key: APP_KEY,
         action: "submit",
