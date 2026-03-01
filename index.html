@@ -90,6 +90,28 @@
     return await res.json();
   }
 
+  function runPreviewLocal() {
+    const cartArr = cartAsArray();
+    if (cartArr.length === 0) { setPreview(null); return; }
+  
+    const map = Object.fromEntries(products.map(p => [p.product_id, p]));
+  
+    let subtotal = 0;
+    for (const item of cartArr) {
+      const p = map[item.product_id];
+      if (!p) continue;
+      subtotal += Number(p.base_price) * Number(item.qty);
+    }
+  
+    // match your backend rule
+    const shipping = subtotal >= 3000 ? 0 : 200;
+    const discount = 0;
+    const tax = 0;
+    const total = subtotal + shipping - discount + tax;
+  
+    setPreview({ subtotal, shipping, discount, tax, total });
+  }
+  
   function cartAsArray() {
     const arr = [];
     for (const pid of Object.keys(cart)) {
@@ -151,10 +173,10 @@
     p.textContent = `Total: ${yen(totals.total)}`;
     b.textContent = `Subtotal ${yen(totals.subtotal)} · Shipping ${yen(totals.shipping)} · Discount ${yen(totals.discount)} · Tax ${yen(totals.tax)}`;
   }
-
+  
   function schedulePreview() {
-    if (previewTimer) clearTimeout(previewTimer);
-    previewTimer = setTimeout(runPreview, 250);
+    // no network; instant
+    runPreviewLocal();
   }
 
   async function runPreview() {
