@@ -228,6 +228,96 @@
     setPreview(null);
   };
 
+  function doGet(e) {
+  // Existing products endpoint support:
+  // ?action=products&key=APP_KEY
+
+  // Admin UI:
+  if (e.parameter && e.parameter.page === "admin") {
+    return HtmlService.createHtmlOutputFromFile("admin");
+  }
+
+  // Keep your existing GET behavior (products)
+  if (!requireKey_(e)) return jsonResponse({ ok: false, error: "Unauthorized" }, 401);
+
+  const action = (e.parameter.action || "").toLowerCase();
+  try {
+    if (action === "products") return jsonResponse({ ok: true, products: getProducts_() });
+    return jsonResponse({ ok: false, error: "Unknown action" }, 400);
+  } catch (err) {
+    return jsonResponse({ ok: false, error: String(err) }, 500);
+  }
+}
+
+// ===== Admin API (called from the admin page) =====
+
+// OPTIONAL: simple allowlist by email
+const STAFF_EMAILS = [
+  "staff1@example.com",
+  "staff2@example.com",
+];
+
+function assertStaff_() {
+  const email = Session.getActiveUser().getEmail(); // works best in Google Workspace domains
+  if (STAFF_EMAILS.length && !STAFF_EMAILS.includes(email)) {
+    throw new Error("Not authorized: " + email);
+  }
+}
+
+// returns recent orders
+function adminGetOrders(limit = 100) {
+  assertStaff_();
+
+  const sh = getSheet_(ORDERS_TAB);
+  const values = sh.getDataRange().getValues();
+  const headers = values[0];
+  const rows = values.slice(1);
+
+  const idx = {};
+  headers.forEach((h, i) => idx[h] = i);
+
+  // Most recent first
+  rows.reverse();
+
+  const out = rows.slice(0, limit).map((r, i) => ({
+    rowNumber: values.length - i, // approximate; used for updates (see below)
+    timestamp: r[idx["timestamp"]],
+    order_id: r[idx["order_id"]],
+    customer_name: r[idx["customer_name"]],
+    phone: r[idx["phone"]],
+    delivery_method: r[idx["delivery_method"]],
+    address: r[idx["address"]],
+    total: r[idx["total"]],
+    status: r[idx["status"]],
+    items_json: r[idx["items_json"]],
+  }));
+
+  return { ok: true, orders: out };
+}
+
+// update status by order_id
+function adminUpdateStatus(order_id, newStatus) {
+  assertStaff_();
+
+  const sh = getSheet_(ORDERS_TAB);
+  const values = sh.getDataRange().getValues();
+  const headers = values[0];
+
+  const idx = {};
+  headers.forEach((h, i) => idx[h] = i);
+
+  const statusCol = idx["status"] + 1; // 1-based
+  const orderIdCol = idx["order_id"];
+
+  for (let r = 1; r < values.length; r++) {
+    if (String(values[r][orderIdCol]) === String(order_id)) {
+      sh.getRange(r + 1, statusCol).setValue(newStatus);
+      return { ok: true };
+    }
+  }
+  return { ok: false, error: "order_id not found" };
+}
+
   init();
 </script>
 </body>
