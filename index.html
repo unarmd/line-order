@@ -5,16 +5,166 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Order</title>
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 16px; }
-    .row { display:flex; gap:12px; align-items:center; margin: 10px 0; }
-    .name { flex: 1; }
-    button { padding: 6px 10px; }
-    input { padding: 8px; width: 100%; max-width: 300px;}
-    .card { border: 1px solid #ddd; padding: 12px; border-radius: 10px; margin: 10px 0; }
-    .totals { font-size: 18px; font-weight: 600; }
-    .muted { color: #666; font-size: 12px; }
+    :root{
+      --bg:#fafafa;
+      --card:#fff;
+      --border:#e6e6e6;
+      --text:#111;
+      --muted:#666;
+      --radius:14px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      padding: 14px 14px 96px; /* space for sticky bar */
+    }
+    h2{ margin: 8px 2px 14px; font-size: 20px; }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 14px;
+      border-radius: var(--radius);
+      margin: 12px 0;
+    }
+    .muted{ color: var(--muted); font-size: 12px; margin-bottom: 10px; }
+
+    /* Products: card-ish rows */
+    .product{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      padding: 12px 0;
+      border-top: 1px solid var(--border);
+    }
+    .product:first-child{ border-top: none; padding-top: 0; }
+    .pname{
+      min-width: 0;
+      flex: 1;
+      line-height: 1.25;
+    }
+    .pname .title{
+      font-size: 15px;
+      font-weight: 650;
+      word-break: break-word;
+    }
+    .pname .price{
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .qtyCtl{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+    .qtyBtn{
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #fff;
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .qtyNum{
+      width: 34px;
+      text-align:center;
+      font-weight: 650;
+      font-size: 16px;
+    }
+
+    /* Customer fields: label above input (mobile friendly) */
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap: 6px;
+      margin: 12px 0;
+    }
+    label{
+      font-size: 12px;
+      color: var(--muted);
+    }
+    input, select{
+      width: 100%;
+      padding: 12px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      font-size: 16px; /* prevents iOS zoom */
+      background: #fff;
+    }
+
+    /* Totals */
+    .totalsRow{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    /* Sticky bottom bar (big, visible order button) */
+    .stickyBar{
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.98);
+      border-top: 1px solid var(--border);
+      padding: 10px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      backdrop-filter: blur(8px);
+    }
+    .stickyTotal{
+      min-width: 0;
+      flex: 1;
+    }
+    .stickyTotal .lbl{
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.1;
+    }
+    .stickyTotal .val{
+      font-size: 18px;
+      font-weight: 850;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+    .primaryBtn{
+      flex: 0 0 auto;
+      height: 46px;
+      padding: 0 16px;
+      border: none;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 800;
+      background: #111;
+      color: #fff;
+      cursor: pointer;
+      min-width: 132px;
+    }
+    .primaryBtn:disabled{
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    @media (min-width: 720px){
+      body{ max-width: 780px; margin: 0 auto; padding: 18px 18px 96px; }
+      h2{ font-size: 22px; }
+      .primaryBtn{ min-width: 160px; }
+    }
   </style>
 </head>
+
 <body>
   <h2>注文</h2>
 
@@ -25,41 +175,66 @@
 
   <div class="card">
     <div class="muted">顧客情報</div>
-    <div class="row"><div class="name">姓名</div><input id="customer_name" placeholder="山本 太郎"></div>
-    <div class="row"><div class="name">電話番号</div><input id="phone" placeholder="090..."></div>
-    <div class="row">
-      <div class="name">配送方法</div>
+
+    <div class="field">
+      <label for="customer_name">姓名</label>
+      <input id="customer_name" placeholder="山本 太郎" />
+    </div>
+
+    <div class="field">
+      <label for="phone">電話番号</label>
+      <input id="phone" placeholder="090..." inputmode="tel" />
+    </div>
+
+    <div class="field">
+      <label for="delivery_method">配送方法</label>
       <select id="delivery_method">
         <!-- <option value="pickup">Pickup</option> -->
         <option value="delivery">郵送</option>
       </select>
     </div>
-    <div class="row"><div class="name">郵送先</div><input id="address" placeholder="東京都…"></div>
+
+    <div class="field">
+      <label for="address">郵送先</label>
+      <input id="address" placeholder="東京都…" />
+    </div>
   </div>
 
   <div class="card">
-    <div class="muted">合計；</div>
-    <div id="preview" class="totals">—</div>
+    <div class="muted">合計</div>
+    <div class="totalsRow">
+      <div>合計</div>
+      <div id="preview">—</div>
+    </div>
     <div id="breakdown" class="muted"></div>
   </div>
 
-  <button id="submitBtn">注文する</button>
   <div id="msg" class="muted" style="margin-top:10px;"></div>
+
+  <!-- Sticky bottom bar (keeps submit button visible on phones) -->
+  <div class="stickyBar">
+    <div class="stickyTotal">
+      <div class="lbl">合計</div>
+      <div class="val" id="stickyTotalVal">—</div>
+    </div>
+    <button class="primaryBtn" id="submitBtn">注文する</button>
+  </div>
 
 <script>
   /************* CONFIG *************/
-  const API_BASE = "https://super-mouse-008b.unseatedcap070911311234.workers.dev"; // .../exec
-  const APP_KEY  = "unseatedcap070911311234";        // must match Code.gs
+  const API_BASE = "https://super-mouse-008b.unseatedcap070911311234.workers.dev"; // unchanged
+  const APP_KEY  = "unseatedcap070911311234";        // unchanged
 
   // If you add LIFF later, set this from liff.getProfile().userId
   let line_user_id = "";
 
   let products = [];
   let cart = {}; // { product_id: qty }
-  let previewTimer = null;
+  let previewTimer = null; // kept (even if unused)
 
   function yen(n){ return "¥" + Number(n || 0).toLocaleString("ja-JP"); }
 
+  /************* API (unchanged contract) *************/
   async function apiGetProducts() {
     const url = `${API_BASE}?action=products&key=${encodeURIComponent(APP_KEY)}`;
     const res = await fetch(url);
@@ -67,6 +242,7 @@
   }
 
   async function apiPreview(cartArr) {
+    // kept (even if you use local preview)
     const res = await fetch(API_BASE, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -74,7 +250,7 @@
     });
     return await res.json();
   }
-  
+
   async function apiSubmit(cartArr, customer) {
     const res = await fetch(API_BASE, {
       method: "POST",
@@ -90,28 +266,24 @@
     return await res.json();
   }
 
+  /************* Pricing preview (local, same as you had) *************/
   function runPreviewLocal() {
     const cartArr = cartAsArray();
     if (cartArr.length === 0) { setPreview(null); return; }
-  
+
     const map = Object.fromEntries(products.map(p => [p.product_id, p]));
-  
     let subtotal = 0;
+
     for (const item of cartArr) {
       const p = map[item.product_id];
       if (!p) continue;
       subtotal += Number(p.base_price) * Number(item.qty);
     }
-  
-    // match your backend rule
-    const total = subtotal;
-    
-    setPreview({
-      subtotal,
-      total
-    });
+
+    const total = subtotal; // shipping/discount/tax hidden in UI
+    setPreview({ subtotal, total });
   }
-  
+
   function cartAsArray() {
     const arr = [];
     for (const pid of Object.keys(cart)) {
@@ -121,19 +293,34 @@
     return arr;
   }
 
+  /************* UI rendering *************/
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[c]));
+  }
+
   function renderProducts() {
     const el = document.getElementById("products");
     el.innerHTML = "";
 
     products.forEach(p => {
       const row = document.createElement("div");
-      row.className = "row";
+      row.className = "product";
 
       const name = document.createElement("div");
-      name.className = "name";
-      name.textContent = `${p.name} (${yen(p.base_price)})`;
+      name.className = "pname";
+      name.innerHTML = `
+        <div class="title">${escapeHtml(p.name)}</div>
+        <div class="price">${yen(p.base_price)}</div>
+      `;
+
+      const ctl = document.createElement("div");
+      ctl.className = "qtyCtl";
 
       const minus = document.createElement("button");
+      minus.className = "qtyBtn";
+      minus.type = "button";
       minus.textContent = "−";
       minus.onclick = () => {
         cart[p.product_id] = Math.max(0, (cart[p.product_id] || 0) - 1);
@@ -142,11 +329,12 @@
       };
 
       const qty = document.createElement("div");
-      qty.style.width = "24px";
-      qty.style.textAlign = "center";
+      qty.className = "qtyNum";
       qty.textContent = cart[p.product_id] || 0;
 
       const plus = document.createElement("button");
+      plus.className = "qtyBtn";
+      plus.type = "button";
       plus.textContent = "+";
       plus.onclick = () => {
         cart[p.product_id] = (cart[p.product_id] || 0) + 1;
@@ -154,32 +342,41 @@
         schedulePreview();
       };
 
+      ctl.appendChild(minus);
+      ctl.appendChild(qty);
+      ctl.appendChild(plus);
+
       row.appendChild(name);
-      row.appendChild(minus);
-      row.appendChild(qty);
-      row.appendChild(plus);
+      row.appendChild(ctl);
       el.appendChild(row);
     });
   }
 
   function setPreview(totals) {
     const p = document.getElementById("preview");
+    const sticky = document.getElementById("stickyTotalVal");
     const b = document.getElementById("breakdown");
+
     if (!totals) {
       p.textContent = "—";
+      sticky.textContent = "—";
       b.textContent = "";
       return;
     }
-    p.textContent = `Total: ${yen(totals.total)}`;
-    //b.textContent = `Subtotal ${yen(totals.subtotal)} · Shipping ${yen(totals.shipping)} · Discount ${yen(totals.discount)} · Tax ${yen(totals.tax)}`;
+
+    p.textContent = yen(totals.total);
+    sticky.textContent = yen(totals.total);
+    b.textContent = `小計 ${yen(totals.subtotal)}`;
   }
-  
+
+  /************* Kept functions (no removal) *************/
   function schedulePreview() {
-    // no network; instant
+    // no network; instant (same intent as before)
     runPreviewLocal();
   }
 
   async function runPreview() {
+    // kept: server preview path (unused)
     const cartArr = cartAsArray();
     if (cartArr.length === 0) { setPreview(null); return; }
 
@@ -194,7 +391,6 @@
   }
 
   async function init() {
-    // Load products
     const res = await apiGetProducts();
     if (!res.ok) {
       document.getElementById("msg").textContent = "Products error: " + res.error;
@@ -202,51 +398,60 @@
     }
     products = res.products;
     renderProducts();
+    runPreviewLocal();
   }
 
+  /************* Submit (same payload; button lock kept) *************/
   document.getElementById("submitBtn").onclick = async () => {
-  const btn = document.getElementById("submitBtn");
+    const btn = document.getElementById("submitBtn");
 
-  const cartArr = cartAsArray();
-  if (cartArr.length === 0) {
-    alert("Cart is empty");
-    return;
-  }
-
-  const customer = {
-    customer_name: document.getElementById("customer_name").value.trim(),
-    phone: document.getElementById("phone").value.trim(),
-    delivery_method: document.getElementById("delivery_method").value,
-    address: document.getElementById("address").value.trim()
-  };
-
-  // 🔒 Disable button to prevent spam clicks
-  btn.disabled = true;
-  btn.textContent = "Placing order...";
-
-  try {
-    const res = await apiSubmit(cartArr, customer);
-
-    if (!res.ok) {
-      alert("Submit error: " + res.error);
+    const cartArr = cartAsArray();
+    if (cartArr.length === 0) {
+      alert("Cart is empty");
       return;
     }
 
-    alert(`Order placed!\nOrder ID: ${res.order_id}\nTotal: ${yen(res.totals.total)}`);
+    const customer = {
+      customer_name: document.getElementById("customer_name").value.trim(),
+      phone: document.getElementById("phone").value.trim(),
+      delivery_method: document.getElementById("delivery_method").value,
+      address: document.getElementById("address").value.trim()
+    };
 
-    // reset
-    cart = {};
-    renderProducts();
-    setPreview(null);
+    // basic UX validation (does not affect backend)
+    if (!customer.customer_name) { alert("姓名を入力してください"); return; }
+    if (!customer.phone) { alert("電話番号を入力してください"); return; }
+    if (customer.delivery_method === "delivery" && !customer.address) {
+      alert("郵送先を入力してください");
+      return;
+    }
 
-  } catch (err) {
-    alert("Network error. Please try again.");
-  } finally {
-    // 🔓 Re-enable button
-    btn.disabled = false;
-    btn.textContent = "Place order";
-  }
-};
+    btn.disabled = true;
+    btn.textContent = "処理中...";
+
+    try {
+      const res = await apiSubmit(cartArr, customer);
+
+      if (!res.ok) {
+        alert("Submit error: " + res.error);
+        return;
+      }
+
+      alert(`注文完了！\n注文ID: ${res.order_id}\n合計: ${yen(res.totals.total)}`);
+
+      // reset
+      cart = {};
+      renderProducts();
+      setPreview(null);
+
+    } catch (err) {
+      alert("Network error. Please try again.");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "注文する";
+    }
+  };
+
   init();
 </script>
 </body>
