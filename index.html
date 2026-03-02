@@ -104,12 +104,12 @@
     }
   
     // match your backend rule
-    const shipping = subtotal >= 3000 ? 0 : 200;
-    const discount = 0;
-    const tax = 0;
-    const total = subtotal + shipping - discount + tax;
-  
-    setPreview({ subtotal, shipping, discount, tax, total });
+    const total = subtotal;
+    
+    setPreview({
+      subtotal,
+      total
+    });
   }
   
   function cartAsArray() {
