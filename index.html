@@ -6,254 +6,221 @@
   <title>Order</title>
   <style>
     :root{
-      --bg:#fafafa;
-      --card:#fff;
-      --border:#e6e6e6;
-      --text:#111;
-      --muted:#666;
-      --radius:14px;
+    --bg:#fafafa;
+    --card:#fff;
+    --border:#e6e6e6;
+    --text:#111;
+    --muted:#666;
+    --radius:14px;
     }
-    *{ box-sizing:border-box; }
+    
+    *{box-sizing:border-box;}
+    
     body{
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      padding: 14px 14px 96px;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      padding:14px 14px 96px;
     }
-    h2{ margin: 8px 2px 14px; font-size: 20px; }
-
+    
+    h2{
+      margin:8px 2px 14px;
+      font-size:20px;
+    }
+    
     .card{
-      background: var(--card);
-      border: 1px solid var(--border);
-      padding: 14px;
-      border-radius: var(--radius);
-      margin: 12px 0;
+      background:var(--card);
+      border:1px solid var(--border);
+      padding:14px;
+      border-radius:var(--radius);
+      margin:12px 0;
     }
-    .muted{ color: var(--muted); font-size: 12px; margin-bottom: 10px; }
-
-    .product{
+    
+    .muted{
+      color:var(--muted);
+      font-size:12px;
+      margin-bottom:10px;
+    }
+    
+    /* PRODUCT GRID */
+    
+    #products{
+      display:grid;
+      grid-template-columns: repeat(auto-fill,minmax(150px,1fr));
+      gap:14px;
+    }
+    
+    .productCard{
+      border:1px solid var(--border);
+      border-radius:12px;
+      overflow:hidden;
+      background:#fff;
       display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 12px;
-      padding: 12px 0;
-      border-top: 1px solid var(--border);
+      flex-direction:column;
     }
-    .product:first-child{ border-top: none; padding-top: 0; }
-
-    .productLeft{
+    
+    .productImg{
+      width:100%;
+      aspect-ratio:1/1;
+      object-fit:cover;
+      background:#f0f0f0;
+      cursor:pointer;
+    }
+    
+    .productBody{
+      padding:10px;
       display:flex;
-      align-items:center;
-      gap: 12px;
-      min-width: 0;
-      flex: 1;
+      flex-direction:column;
+      gap:6px;
     }
-
-    .thumb{
-      width: 72px;
-      height: 72px;
-      border-radius: 12px;
-      object-fit: cover;
-      background: #f0f0f0;
-      border: 1px solid var(--border);
-      flex: 0 0 auto;
-      cursor: pointer;
+    
+    .productTitle{
+      font-size:14px;
+      font-weight:700;
+      line-height:1.3;
+      cursor:pointer;
     }
-
-    .pname{
-      min-width: 0;
-      flex: 1;
+    
+    .productPrice{
+      font-size:12px;
+      color:var(--muted);
     }
-    .pname .title{
-      font-size: 15px;
-      font-weight: 650;
-      line-height: 1.3;
-      word-break: break-word;
-      cursor: pointer;
-    }
-    .pname .price{
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 4px;
-    }
-    .pname .desc{
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 6px;
-      line-height: 1.35;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
+    
     .qtyCtl{
       display:flex;
       align-items:center;
-      gap: 8px;
-      flex: 0 0 auto;
+      justify-content:center;
+      gap:8px;
+      margin-top:6px;
     }
+    
     .qtyBtn{
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: #fff;
-      font-size: 18px;
-      line-height: 1;
-      cursor: pointer;
+      width:36px;
+      height:36px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background:#fff;
+      font-size:18px;
     }
+    
     .qtyNum{
-      width: 34px;
+      min-width:24px;
       text-align:center;
-      font-weight: 650;
-      font-size: 16px;
+      font-weight:700;
     }
-
+    
+    /* FORM */
+    
     .field{
       display:flex;
       flex-direction:column;
-      gap: 6px;
-      margin: 12px 0;
+      gap:6px;
+      margin:12px 0;
     }
+    
     label{
-      font-size: 12px;
-      color: var(--muted);
+      font-size:12px;
+      color:var(--muted);
     }
-    input, select{
-      width: 100%;
-      padding: 12px 12px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      font-size: 16px;
-      background: #fff;
+    
+    input,select{
+      width:100%;
+      padding:12px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      font-size:16px;
     }
-
+    
+    /* TOTAL */
+    
     .totalsRow{
       display:flex;
       justify-content:space-between;
-      align-items:center;
-      gap: 10px;
-      font-size: 18px;
-      font-weight: 800;
+      font-size:18px;
+      font-weight:800;
     }
-
+    
+    /* STICKY ORDER BAR */
+    
     .stickyBar{
-      position: fixed;
-      left: 0; right: 0; bottom: 0;
-      background: rgba(255,255,255,0.98);
-      border-top: 1px solid var(--border);
-      padding: 10px 12px;
+      position:fixed;
+      bottom:0;
+      left:0;
+      right:0;
+      background:white;
+      border-top:1px solid var(--border);
+      padding:10px 12px;
       display:flex;
-      align-items:center;
       justify-content:space-between;
-      gap: 10px;
-      backdrop-filter: blur(8px);
+      align-items:center;
+      gap:10px;
     }
-    .stickyTotal{
-      min-width: 0;
-      flex: 1;
-    }
-    .stickyTotal .lbl{
-      font-size: 11px;
-      color: var(--muted);
-      line-height: 1.1;
-    }
-    .stickyTotal .val{
-      font-size: 18px;
-      font-weight: 850;
-      line-height: 1.2;
-      word-break: break-word;
-    }
+    
     .primaryBtn{
-      flex: 0 0 auto;
-      height: 46px;
-      padding: 0 16px;
-      border: none;
-      border-radius: 14px;
-      font-size: 16px;
-      font-weight: 800;
-      background: #111;
-      color: #fff;
-      cursor: pointer;
-      min-width: 132px;
+      height:46px;
+      padding:0 16px;
+      border:none;
+      border-radius:12px;
+      font-weight:800;
+      background:#111;
+      color:#fff;
     }
-    .primaryBtn:disabled{
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    /* Modal */
+    
+    /* MODAL */
+    
     .modal{
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.45);
-      display: none;
-      align-items: flex-end;
-      justify-content: center;
-      z-index: 1000;
-      padding: 12px;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.45);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:1000;
     }
-    .modal.show{ display: flex; }
+    
+    .modal.show{
+      display:flex;
+    }
+    
     .modalCard{
-      width: 100%;
-      max-width: 560px;
-      background: #fff;
-      border-radius: 18px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+      width:90%;
+      max-width:420px;
+      background:#fff;
+      border-radius:16px;
+      overflow:hidden;
     }
+    
     .modalImg{
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      object-fit: cover;
-      background: #f0f0f0;
-      display: block;
+      width:100%;
+      aspect-ratio:1/1;
+      object-fit:cover;
     }
+    
     .modalBody{
-      padding: 16px;
+      padding:14px;
     }
+    
     .modalTitle{
-      font-size: 20px;
-      font-weight: 800;
-      line-height: 1.3;
-      margin-bottom: 6px;
+      font-size:18px;
+      font-weight:800;
     }
+    
     .modalPrice{
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 10px;
+      font-weight:700;
+      margin-top:4px;
     }
+    
     .modalDesc{
-      font-size: 14px;
-      color: var(--muted);
-      line-height: 1.5;
-      white-space: pre-wrap;
-      margin-bottom: 16px;
+      font-size:14px;
+      color:var(--muted);
+      margin-top:8px;
     }
+    
     .modalActions{
+      margin-top:14px;
       display:flex;
       justify-content:space-between;
-      gap: 10px;
-      align-items:center;
-    }
-    .secondaryBtn{
-      height: 44px;
-      padding: 0 14px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: #fff;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    @media (min-width: 720px){
-      body{ max-width: 780px; margin: 0 auto; padding: 18px 18px 96px; }
-      h2{ font-size: 22px; }
-      .primaryBtn{ min-width: 160px; }
-      .modal{ align-items: center; }
     }
   </style>
 </head>
