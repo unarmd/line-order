@@ -401,69 +401,67 @@
   function renderProducts() {
     const el = document.getElementById("products");
     el.innerHTML = "";
-
+  
     products.forEach(p => {
-      const row = document.createElement("div");
-      row.className = "product";
-
-      const left = document.createElement("div");
-      left.className = "productLeft";
-
+  
+      const card = document.createElement("div");
+      card.className = "productCard";
+  
       const img = document.createElement("img");
-      img.className = "thumb";
+      img.className = "productImg";
+      img.loading = "lazy";
       img.src = p.image_url || "";
-      img.alt = p.name || "";
       img.onclick = () => openProductModal(p);
-
-      const name = document.createElement("div");
-      name.className = "pname";
-
+  
+      const body = document.createElement("div");
+      body.className = "productBody";
+  
       const title = document.createElement("div");
-      title.className = "title";
+      title.className = "productTitle";
       title.textContent = p.name;
       title.onclick = () => openProductModal(p);
-
+  
       const price = document.createElement("div");
-      price.className = "price";
+      price.className = "productPrice";
       price.textContent = yen(p.base_price);
-
-      const desc = document.createElement("div");
-      desc.className = "desc";
-      desc.textContent = p.description || "";
-
-      name.appendChild(title);
-      name.appendChild(price);
-      if (p.description) name.appendChild(desc);
-
-      left.appendChild(img);
-      left.appendChild(name);
-
+  
       const ctl = document.createElement("div");
       ctl.className = "qtyCtl";
-
+  
       const minus = document.createElement("button");
       minus.className = "qtyBtn";
-      minus.type = "button";
       minus.textContent = "−";
-      minus.onclick = () => removeOneFromCart(p.product_id);
-
+      minus.onclick = () => {
+        cart[p.product_id] = Math.max(0,(cart[p.product_id]||0)-1);
+        renderProducts();
+        schedulePreview();
+      };
+  
       const qty = document.createElement("div");
       qty.className = "qtyNum";
       qty.textContent = cart[p.product_id] || 0;
-
+  
       const plus = document.createElement("button");
       plus.className = "qtyBtn";
-      plus.type = "button";
       plus.textContent = "+";
-      plus.onclick = () => addOneToCart(p.product_id);
-
+      plus.onclick = () => {
+        cart[p.product_id] = (cart[p.product_id]||0)+1;
+        renderProducts();
+        schedulePreview();
+      };
+  
       ctl.appendChild(minus);
       ctl.appendChild(qty);
       ctl.appendChild(plus);
-
-      row.appendChild(left);
-      row.appendChild(ctl);
-      el.appendChild(row);
+  
+      body.appendChild(title);
+      body.appendChild(price);
+      body.appendChild(ctl);
+  
+      card.appendChild(img);
+      card.appendChild(body);
+  
+      el.appendChild(card);
     });
   }
 
