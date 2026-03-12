@@ -19,7 +19,7 @@
       margin: 0;
       background: var(--bg);
       color: var(--text);
-      padding: 14px 14px 96px; /* space for sticky bar */
+      padding: 14px 14px 96px;
     }
     h2{ margin: 8px 2px 14px; font-size: 20px; }
 
@@ -32,7 +32,6 @@
     }
     .muted{ color: var(--muted); font-size: 12px; margin-bottom: 10px; }
 
-    /* Products: card-ish rows */
     .product{
       display:flex;
       align-items:center;
@@ -42,20 +41,51 @@
       border-top: 1px solid var(--border);
     }
     .product:first-child{ border-top: none; padding-top: 0; }
+
+    .productLeft{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .thumb{
+      width: 72px;
+      height: 72px;
+      border-radius: 12px;
+      object-fit: cover;
+      background: #f0f0f0;
+      border: 1px solid var(--border);
+      flex: 0 0 auto;
+      cursor: pointer;
+    }
+
     .pname{
       min-width: 0;
       flex: 1;
-      line-height: 1.25;
     }
     .pname .title{
       font-size: 15px;
       font-weight: 650;
+      line-height: 1.3;
       word-break: break-word;
+      cursor: pointer;
     }
     .pname .price{
       font-size: 12px;
       color: var(--muted);
       margin-top: 4px;
+    }
+    .pname .desc{
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
 
     .qtyCtl{
@@ -81,7 +111,6 @@
       font-size: 16px;
     }
 
-    /* Customer fields: label above input (mobile friendly) */
     .field{
       display:flex;
       flex-direction:column;
@@ -97,11 +126,10 @@
       padding: 12px 12px;
       border-radius: 12px;
       border: 1px solid var(--border);
-      font-size: 16px; /* prevents iOS zoom */
+      font-size: 16px;
       background: #fff;
     }
 
-    /* Totals */
     .totalsRow{
       display:flex;
       justify-content:space-between;
@@ -111,7 +139,6 @@
       font-weight: 800;
     }
 
-    /* Sticky bottom bar (big, visible order button) */
     .stickyBar{
       position: fixed;
       left: 0; right: 0; bottom: 0;
@@ -157,10 +184,76 @@
       cursor: not-allowed;
     }
 
+    /* Modal */
+    .modal{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 1000;
+      padding: 12px;
+    }
+    .modal.show{ display: flex; }
+    .modalCard{
+      width: 100%;
+      max-width: 560px;
+      background: #fff;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+    }
+    .modalImg{
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      background: #f0f0f0;
+      display: block;
+    }
+    .modalBody{
+      padding: 16px;
+    }
+    .modalTitle{
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1.3;
+      margin-bottom: 6px;
+    }
+    .modalPrice{
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .modalDesc{
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.5;
+      white-space: pre-wrap;
+      margin-bottom: 16px;
+    }
+    .modalActions{
+      display:flex;
+      justify-content:space-between;
+      gap: 10px;
+      align-items:center;
+    }
+    .secondaryBtn{
+      height: 44px;
+      padding: 0 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
     @media (min-width: 720px){
       body{ max-width: 780px; margin: 0 auto; padding: 18px 18px 96px; }
       h2{ font-size: 22px; }
       .primaryBtn{ min-width: 160px; }
+      .modal{ align-items: center; }
     }
   </style>
 </head>
@@ -189,7 +282,6 @@
     <div class="field">
       <label for="delivery_method">配送方法</label>
       <select id="delivery_method">
-        <!-- <option value="pickup">Pickup</option> -->
         <option value="delivery">郵送</option>
       </select>
     </div>
@@ -211,7 +303,6 @@
 
   <div id="msg" class="muted" style="margin-top:10px;"></div>
 
-  <!-- Sticky bottom bar (keeps submit button visible on phones) -->
   <div class="stickyBar">
     <div class="stickyTotal">
       <div class="lbl">合計</div>
@@ -220,21 +311,35 @@
     <button class="primaryBtn" id="submitBtn">注文する</button>
   </div>
 
+  <!-- Product detail modal -->
+  <div id="productModal" class="modal" aria-hidden="true">
+    <div class="modalCard">
+      <img id="modalImg" class="modalImg" src="" alt="">
+      <div class="modalBody">
+        <div id="modalTitle" class="modalTitle"></div>
+        <div id="modalPrice" class="modalPrice"></div>
+        <div id="modalDesc" class="modalDesc"></div>
+        <div class="modalActions">
+          <button class="secondaryBtn" id="modalCloseBtn" type="button">閉じる</button>
+          <button class="primaryBtn" id="modalAddBtn" type="button">カートに追加</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <script>
   /************* CONFIG *************/
-  const API_BASE = "https://super-mouse-008b.unseatedcap070911311234.workers.dev"; // unchanged
-  const APP_KEY  = "unseatedcap070911311234";        // unchanged
+  const API_BASE = "https://super-mouse-008b.unseatedcap070911311234.workers.dev";
+  const APP_KEY  = "unseatedcap070911311234";
 
-  // If you add LIFF later, set this from liff.getProfile().userId
   let line_user_id = "";
-
   let products = [];
-  let cart = {}; // { product_id: qty }
-  let previewTimer = null; // kept (even if unused)
+  let cart = {};
+  let previewTimer = null;
+  let currentModalProduct = null;
 
   function yen(n){ return "¥" + Number(n || 0).toLocaleString("ja-JP"); }
 
-  /************* API (unchanged contract) *************/
   async function apiGetProducts() {
     const url = `${API_BASE}?action=products&key=${encodeURIComponent(APP_KEY)}`;
     const res = await fetch(url);
@@ -242,7 +347,6 @@
   }
 
   async function apiPreview(cartArr) {
-    // kept (even if you use local preview)
     const res = await fetch(API_BASE, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -266,7 +370,6 @@
     return await res.json();
   }
 
-  /************* Pricing preview (local, same as you had) *************/
   function runPreviewLocal() {
     const cartArr = cartAsArray();
     if (cartArr.length === 0) { setPreview(null); return; }
@@ -280,7 +383,7 @@
       subtotal += Number(p.base_price) * Number(item.qty);
     }
 
-    const total = subtotal; // shipping/discount/tax hidden in UI
+    const total = subtotal;
     setPreview({ subtotal, total });
   }
 
@@ -293,11 +396,39 @@
     return arr;
   }
 
-  /************* UI rendering *************/
   function escapeHtml(s){
     return String(s).replace(/[&<>"']/g, c => ({
       "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
     }[c]));
+  }
+
+  function openProductModal(product) {
+    currentModalProduct = product;
+    document.getElementById("modalImg").src = product.image_url || "";
+    document.getElementById("modalImg").alt = product.name || "";
+    document.getElementById("modalTitle").textContent = product.name || "";
+    document.getElementById("modalPrice").textContent = yen(product.base_price || 0);
+    document.getElementById("modalDesc").textContent = product.description || "商品説明はありません。";
+    document.getElementById("productModal").classList.add("show");
+    document.getElementById("productModal").setAttribute("aria-hidden", "false");
+  }
+
+  function closeProductModal() {
+    currentModalProduct = null;
+    document.getElementById("productModal").classList.remove("show");
+    document.getElementById("productModal").setAttribute("aria-hidden", "true");
+  }
+
+  function addOneToCart(productId) {
+    cart[productId] = (cart[productId] || 0) + 1;
+    renderProducts();
+    schedulePreview();
+  }
+
+  function removeOneFromCart(productId) {
+    cart[productId] = Math.max(0, (cart[productId] || 0) - 1);
+    renderProducts();
+    schedulePreview();
   }
 
   function renderProducts() {
@@ -308,12 +439,37 @@
       const row = document.createElement("div");
       row.className = "product";
 
+      const left = document.createElement("div");
+      left.className = "productLeft";
+
+      const img = document.createElement("img");
+      img.className = "thumb";
+      img.src = p.image_url || "";
+      img.alt = p.name || "";
+      img.onclick = () => openProductModal(p);
+
       const name = document.createElement("div");
       name.className = "pname";
-      name.innerHTML = `
-        <div class="title">${escapeHtml(p.name)}</div>
-        <div class="price">${yen(p.base_price)}</div>
-      `;
+
+      const title = document.createElement("div");
+      title.className = "title";
+      title.textContent = p.name;
+      title.onclick = () => openProductModal(p);
+
+      const price = document.createElement("div");
+      price.className = "price";
+      price.textContent = yen(p.base_price);
+
+      const desc = document.createElement("div");
+      desc.className = "desc";
+      desc.textContent = p.description || "";
+
+      name.appendChild(title);
+      name.appendChild(price);
+      if (p.description) name.appendChild(desc);
+
+      left.appendChild(img);
+      left.appendChild(name);
 
       const ctl = document.createElement("div");
       ctl.className = "qtyCtl";
@@ -322,11 +478,7 @@
       minus.className = "qtyBtn";
       minus.type = "button";
       minus.textContent = "−";
-      minus.onclick = () => {
-        cart[p.product_id] = Math.max(0, (cart[p.product_id] || 0) - 1);
-        qty.textContent = cart[p.product_id] || 0;
-        schedulePreview();
-      };
+      minus.onclick = () => removeOneFromCart(p.product_id);
 
       const qty = document.createElement("div");
       qty.className = "qtyNum";
@@ -336,17 +488,13 @@
       plus.className = "qtyBtn";
       plus.type = "button";
       plus.textContent = "+";
-      plus.onclick = () => {
-        cart[p.product_id] = (cart[p.product_id] || 0) + 1;
-        qty.textContent = cart[p.product_id];
-        schedulePreview();
-      };
+      plus.onclick = () => addOneToCart(p.product_id);
 
       ctl.appendChild(minus);
       ctl.appendChild(qty);
       ctl.appendChild(plus);
 
-      row.appendChild(name);
+      row.appendChild(left);
       row.appendChild(ctl);
       el.appendChild(row);
     });
@@ -369,14 +517,11 @@
     b.textContent = `小計 ${yen(totals.subtotal)}`;
   }
 
-  /************* Kept functions (no removal) *************/
   function schedulePreview() {
-    // no network; instant (same intent as before)
     runPreviewLocal();
   }
 
   async function runPreview() {
-    // kept: server preview path (unused)
     const cartArr = cartAsArray();
     if (cartArr.length === 0) { setPreview(null); return; }
 
@@ -401,7 +546,16 @@
     runPreviewLocal();
   }
 
-  /************* Submit (same payload; button lock kept) *************/
+  document.getElementById("modalCloseBtn").onclick = closeProductModal;
+  document.getElementById("productModal").onclick = (e) => {
+    if (e.target.id === "productModal") closeProductModal();
+  };
+  document.getElementById("modalAddBtn").onclick = () => {
+    if (!currentModalProduct) return;
+    addOneToCart(currentModalProduct.product_id);
+    closeProductModal();
+  };
+
   document.getElementById("submitBtn").onclick = async () => {
     const btn = document.getElementById("submitBtn");
 
@@ -418,7 +572,6 @@
       address: document.getElementById("address").value.trim()
     };
 
-    // basic UX validation (does not affect backend)
     if (!customer.customer_name) { alert("姓名を入力してください"); return; }
     if (!customer.phone) { alert("電話番号を入力してください"); return; }
     if (customer.delivery_method === "delivery" && !customer.address) {
@@ -439,7 +592,6 @@
 
       alert(`注文完了！\n注文ID: ${res.order_id}\n合計: ${yen(res.totals.total)}`);
 
-      // reset
       cart = {};
       renderProducts();
       setPreview(null);
