@@ -46,9 +46,9 @@
     /* PRODUCT GRID */
     
     #products{
-      display:grid;
-      grid-template-columns: repeat(auto-fill,minmax(150px,1fr));
-      gap:14px;
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap:14px;
     }
     
     .productCard{
@@ -58,13 +58,21 @@
       background:#fff;
       display:flex;
       flex-direction:column;
+      min-width:0;
+    }
+    
+    .productImgWrap{
+      width:100%;
+      aspect-ratio:1 / 1;
+      background:#f3f3f3;
+      overflow:hidden;
     }
     
     .productImg{
       width:100%;
-      aspect-ratio:1/1;
+      height:100%;
       object-fit:cover;
-      background:#f0f0f0;
+      display:block;
       cursor:pointer;
     }
     
@@ -78,7 +86,8 @@
     .productTitle{
       font-size:14px;
       font-weight:700;
-      line-height:1.3;
+      line-height:1.35;
+      word-break:break-word;
       cursor:pointer;
     }
     
@@ -102,12 +111,30 @@
       border:1px solid var(--border);
       background:#fff;
       font-size:18px;
+      line-height:1;
+      cursor:pointer;
     }
     
     .qtyNum{
       min-width:24px;
       text-align:center;
       font-weight:700;
+    }
+    
+    @media (max-width: 480px){
+      #products{
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap:12px;
+      }
+    
+      .productTitle{
+        font-size:13px;
+      }
+    
+      .qtyBtn{
+        width:34px;
+        height:34px;
+      }
     }
     
     /* FORM */
@@ -130,6 +157,8 @@
       border-radius:10px;
       border:1px solid var(--border);
       font-size:16px;
+      background:#fff;
+      display:block;
     }
     
     /* TOTAL */
@@ -165,10 +194,28 @@
       font-weight:800;
       background:#111;
       color:#fff;
+      cursor:pointer;
+    }
+
+    .stickyTotal{
+      min-width:0;
+      flex:1;
+    }
+    
+    .lbl{
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.1;
+    }
+    
+    .val{
+      font-size:18px;
+      font-weight:850;
+      line-height:1.2;
+      word-break:break-word;
     }
     
     /* MODAL */
-    
     .modal{
       position:fixed;
       inset:0;
@@ -177,6 +224,7 @@
       align-items:center;
       justify-content:center;
       z-index:1000;
+      padding:16px;
     }
     
     .modal.show{
@@ -184,17 +232,25 @@
     }
     
     .modalCard{
-      width:90%;
-      max-width:420px;
+      width:min(100%, 420px);
+      max-height:90vh;
+      overflow:auto;
       background:#fff;
       border-radius:16px;
+    }
+    
+    .modalImgWrap{
+      width:100%;
+      aspect-ratio:1 / 1;
+      background:#f3f3f3;
       overflow:hidden;
     }
     
     .modalImg{
       width:100%;
-      aspect-ratio:1/1;
+      height:100%;
       object-fit:cover;
+      display:block;
     }
     
     .modalBody{
@@ -215,12 +271,25 @@
       font-size:14px;
       color:var(--muted);
       margin-top:8px;
+      line-height:1.45;
     }
     
     .modalActions{
       margin-top:14px;
       display:flex;
       justify-content:space-between;
+      gap:10px;
+    }
+    
+    .secondaryBtn{
+      height:46px;
+      padding:0 16px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:#fff;
+      color:var(--text);
+      font-weight:700;
+      cursor:pointer;
     }
   </style>
 </head>
@@ -281,7 +350,9 @@
   <!-- Product detail modal -->
   <div id="productModal" class="modal" aria-hidden="true">
     <div class="modalCard">
-      <img id="modalImg" class="modalImg" src="" alt="">
+      <div class="modalImgWrap">
+        <img id="modalImg" class="modalImg" src="" alt="">
+      </div>
       <div class="modalBody">
         <div id="modalTitle" class="modalTitle"></div>
         <div id="modalPrice" class="modalPrice"></div>
@@ -407,11 +478,17 @@
       const card = document.createElement("div");
       card.className = "productCard";
   
+      const imgWrap = document.createElement("div");
+      imgWrap.className = "productImgWrap";
+      
       const img = document.createElement("img");
       img.className = "productImg";
       img.loading = "lazy";
       img.src = p.image_url || "";
+      img.alt = p.name || "";
       img.onclick = () => openProductModal(p);
+      
+      imgWrap.appendChild(img);
   
       const body = document.createElement("div");
       body.className = "productBody";
@@ -458,7 +535,7 @@
       body.appendChild(price);
       body.appendChild(ctl);
   
-      card.appendChild(img);
+      card.appendChild(imgWrap);
       card.appendChild(body);
   
       el.appendChild(card);
