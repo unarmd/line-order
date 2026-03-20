@@ -344,6 +344,26 @@
 
   <div id="msg" class="muted" style="margin-top:10px;"></div>
 
+  <div class="muted" style="margin-top:8px;">
+    ※ 商品は中国より発送されます。配送日数は地域・通関状況により異なる場合があります。
+  </div>
+
+  <div class="card" id="checkoutNotice">
+    <div class="muted">ご注文前のご案内</div>
+    <div style="font-size:14px; line-height:1.7;">
+      ・本サービスは海外事業者による越境ECサービスです。<br>
+      ・商品は中国から国際配送されます。<br>
+      ・関税・輸入消費税等が発生する場合、お客様のご負担となる場合があります。<br>
+      ・ご注文内容、価格、送料等をご確認のうえご注文ください。<br>
+      ・ご注文により、
+      <a href="./tokutei.html" target="_blank">特定商取引法に基づく表記</a>、
+      <a href="./terms.html" target="_blank">利用規約</a>、
+      <a href="./privacy.html" target="_blank">プライバシーポリシー</a>、
+      <a href="./shipping-refund.html" target="_blank">配送・返品・返金ポリシー</a>
+      に同意したものとみなします。
+    </div>
+  </div>
+
   <div class="stickyBar">
     <div class="stickyTotal">
       <div class="lbl">合計</div>
@@ -561,7 +581,12 @@
 
     p.textContent = yen(totals.total);
     sticky.textContent = yen(totals.total);
-    b.textContent = `小計 ${yen(totals.subtotal)}`;
+    b.innerHTML = `
+      小計 ${yen(totals.subtotal)}<br>
+      送料 ${yen(0)}<br>
+      合計 ${yen(totals.total)}
+      
+    `;
   }
 
   function schedulePreview() {
@@ -656,7 +681,7 @@
   init();
 </script>
 
-  <footer style="margin-top:40px; padding:20px; text-align:center; font-size:14px;">
+  <footer style="margin-top:40px; padding:20px; text-align:center; font-size:14px; line-height:1.8;">
     <a href="./tokutei.html">特定商取引法に基づく表記</a> |
     <a href="./terms.html">利用規約</a> |
     <a href="./privacy.html">プライバシーポリシー</a> |
